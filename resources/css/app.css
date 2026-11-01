@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    html {
+        scroll-behavior: smooth;
+    }
+    body {
+        @apply bg-softbg text-inkdark antialiased;
+    }
+    /* Wajib ada agar Alpine.js x-cloak menyembunyikan elemen sebelum Alpine siap.
+       Tanpa ini, drawer mobile & dropdown sempat "kedip" tampil sebelum di-hide JS. */
+    [x-cloak] {
+        display: none !important;
+    }
+}
+
+@layer components {
+    /* Kartu berita - dipakai di seluruh portal */
+    .news-card {
+        @apply bg-white rounded-card shadow-card hover:shadow-card-hover transition-shadow duration-300 overflow-hidden;
+    }
+
+    .badge-category {
+        @apply inline-block px-2.5 py-1 text-xs font-semibold rounded-full bg-primary-50 text-primary-700;
+    }
+
+    .btn-primary {
+        @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-white font-medium text-sm hover:bg-primary-700 transition-colors;
+    }
+
+    .btn-outline {
+        @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg border border-slate-300 text-inkdark font-medium text-sm hover:bg-slate-50 transition-colors;
+    }
+
+    .section-title {
+        @apply text-xl md:text-2xl font-bold text-inkdark relative pl-3 border-l-4 border-primary;
+    }
+
+    /* Konten artikel hasil simpan Trix editor (HTML biasa, bukan web component) */
+    .article-content {
+        @apply prose prose-slate max-w-none prose-headings:font-bold prose-a:text-primary prose-img:rounded-xl;
+    }
+}
+
