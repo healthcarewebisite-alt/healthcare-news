@@ -30,6 +30,12 @@ class HomeController extends Controller
             ->limit(4)
             ->get();
 
+        $popularArticles = Article::published()
+            ->with(['category', 'author'])
+            ->popular()
+            ->limit(4)
+            ->get();
+
         $categories = Category::active()->ordered()->limit(6)->get();
 
         $latestArticles = Article::published()
@@ -57,7 +63,7 @@ class HomeController extends Controller
         $doctors = Doctor::active()->with('hospital')->limit(6)->get();
 
         return view('pages.home', compact(
-            'breakingNews', 'headline', 'trending', 'categories',
+            'breakingNews', 'headline', 'trending', 'popularArticles', 'categories',
             'latestArticles', 'featuredArticle', 'healthTips',
             'research', 'technology', 'videos', 'infographics',
             'hospitals', 'doctors'

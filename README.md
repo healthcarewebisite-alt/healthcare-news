@@ -67,6 +67,9 @@ Login di `http://healthcare-id.test/login`, lalu akan diarahkan ke `/admin` (das
 | Navbar Desktop | `resources/views/partials/navbar-desktop.blade.php` |
 | Navbar Mobile (drawer + bottom nav) | `resources/views/partials/navbar-mobile.blade.php` |
 | CRUD Berita + Trix WYSIWYG | `app/Http/Controllers/Admin/ArticleController.php` |
+| Media Library + pemilihan gambar di editor | `app/Http/Controllers/Admin/MediaController.php` |
+| CRUD Video YouTube + halaman publik | `app/Http/Controllers/Admin/VideoController.php` |
+| CMS halaman informasi | `app/Http/Controllers/Admin/ContentPageController.php` |
 | Konversi gambar otomatis ke WebP | `app/Services/ImageUploadService.php` |
 | Dashboard Admin ala TailAdmin | `resources/views/layouts/admin.blade.php` |
 | Role & middleware akses admin | `app/Http/Middleware/EnsureUserHasRole.php` |
@@ -74,9 +77,24 @@ Login di `http://healthcare-id.test/login`, lalu akan diarahkan ke `/admin` (das
 ## Role Pengguna
 
 - **super_admin** — akses penuh termasuk kelola pengguna
-- **editor** — kelola semua berita, kategori, RS, dokter, komentar
-- **author** — hanya kelola berita miliknya sendiri
+- **editor** — kelola semua berita, kategori, media, video, RS, dokter, komentar
+- **author** — hanya kelola draft/artikel revisi miliknya; dapat mengajukan review dan tidak dapat menerbitkan
 - **member** — akun publik (belum ada fitur khusus member di versi ini)
+
+## Alur Editorial
+
+- Artikel baru disimpan sebagai **Draft**.
+- Author mengajukan draft untuk **Review**; setelah diajukan, author tidak dapat mengubahnya sampai editor memberi keputusan.
+- Editor dapat menerbitkan, menolak dengan catatan revisi, atau menjadwalkan artikel.
+- Artikel terjadwal diterbitkan otomatis oleh Laravel Scheduler. Di server, jalankan `php artisan schedule:run` setiap menit melalui cron. Untuk development, gunakan `php artisan schedule:work`.
+- Editor dapat mengarsipkan artikel terbit. Author hanya dapat melihat dan mengubah artikel miliknya sendiri yang masih Draft atau perlu revisi.
+- Editor dapat mengelola media WebP; media yang masih direferensikan konten tidak dapat dihapus. Pada editor berita, gambar dari Media Library dapat disisipkan langsung ke konten.
+- Video YouTube dikelola dari panel admin dan video aktif tampil di halaman `/video` serta beranda. Rubrik Pharmacy, Medical Devices, People, dan Digital Cover disediakan oleh migration kategori CMS.
+- Halaman About Us, Advertise, Magazine, Contact Us, Privacy Policy, dan Event & Promotion dikelola melalui **Admin → Halaman Informasi**. Teks ditampilkan sebagai paragraf dan HTML tidak dieksekusi.
+
+## Validasi
+
+Jalankan pemeriksaan fitur dengan `php artisan test`, format PHP dengan `vendor/bin/pint --test`, dan build aset produksi dengan `npm run build`.
 
 ## Catatan Teknis
 

@@ -9,6 +9,14 @@
     body {
         @apply bg-softbg text-inkdark antialiased;
     }
+    :focus-visible {
+        outline: 2px solid #2563EB;
+        outline-offset: 3px;
+    }
+    :focus-visible {
+        outline: 2px solid #2563EB;
+        outline-offset: 3px;
+    }
     /* Wajib ada agar Alpine.js x-cloak menyembunyikan elemen sebelum Alpine siap.
        Tanpa ini, drawer mobile & dropdown sempat "kedip" tampil sebelum di-hide JS. */
     [x-cloak] {
@@ -17,6 +25,18 @@
 }
 
 @layer components {
+    .skip-link {
+        @apply fixed left-4 top-4 z-[100] -translate-y-24 rounded-lg bg-inkdark px-4 py-3 font-semibold text-white shadow-lg transition-transform focus:translate-y-0;
+    }
+
+    .mobile-bottom-nav {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    .mobile-bottom-nav-spacer {
+        height: calc(3.5rem + env(safe-area-inset-bottom));
+    }
+
     /* Kartu berita - dipakai di seluruh portal */
     .news-card {
         @apply bg-white rounded-card shadow-card hover:shadow-card-hover transition-shadow duration-300 overflow-hidden;
@@ -44,3 +64,13 @@
     }
 }
 
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

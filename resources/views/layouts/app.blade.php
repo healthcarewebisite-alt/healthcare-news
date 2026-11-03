@@ -44,10 +44,12 @@
 </head>
 <body class="min-h-screen flex flex-col bg-softbg">
 
+    <a href="#main-content" class="skip-link">Lewati ke konten utama</a>
+
     @include('partials.navbar-desktop')
     @include('partials.navbar-mobile')
 
-    <main class="flex-1">
+    <main id="main-content" tabindex="-1" class="flex-1">
         {{ $slot }}
     </main>
 

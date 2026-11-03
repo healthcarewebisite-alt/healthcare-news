@@ -26,6 +26,35 @@ window.adminLayout = () => ({
 
 Alpine.start();
 
+window.addEventListener("message", (event) => {
+    if (event.origin !== window.location.origin) return;
+    if (event.data?.type !== "healthcare-media-select" || typeof event.data.url !== "string") return;
+
+    const url = new URL(event.data.url, window.location.origin);
+    if (url.origin !== window.location.origin || !url.pathname.startsWith("/storage/")) return;
+
+    const editor = document.querySelector("trix-editor#content");
+    if (editor) {
+        editor.editor.insertAttachment(new Trix.Attachment({
+            contentType: "image/webp",
+            url: url.href,
+        }));
+    }
+});
+
+const featuredImageInput = document.getElementById("featured-image-input");
+const featuredImagePreview = document.getElementById("featured-image-preview");
+
+featuredImageInput?.addEventListener("change", () => {
+    const file = featuredImageInput.files?.[0];
+    if (!file || !featuredImagePreview) return;
+
+    const imageUrl = URL.createObjectURL(file);
+    featuredImagePreview.src = imageUrl;
+    featuredImagePreview.classList.remove("hidden");
+    featuredImagePreview.addEventListener("load", () => URL.revokeObjectURL(imageUrl), { once: true });
+});
+
 /**
  * Trix Editor - Upload gambar otomatis
  * Backend akan otomatis convert gambar ke .webp (lihat MediaController@uploadEditorImage)

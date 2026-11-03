@@ -17,7 +17,7 @@
     </div>
     @endif
 
-    {{-- ============ HERO NEWS: Headline (70%) + Trending (30%) - dengan Carousel ============ --}}
+    {{-- ============ HERO NEWS: Headline (70%) + Most Popular (30%) ============ --}}
     <section class="max-w-7xl mx-auto px-4 md:px-6 py-6 grid grid-cols-1 lg:grid-cols-10 gap-5">
         {{-- Berita Utama - carousel Swiper, gambar besar full width --}}
         <div class="lg:col-span-7">
@@ -69,10 +69,13 @@
             @endif
         </div>
 
-        {{-- Trending 30% - list 1,2,3,4 --}}
+        {{-- Most popular articles --}}
         <div class="lg:col-span-3 flex flex-col gap-3">
-            <h2 class="section-title !text-base">Trending</h2>
-            @foreach($trending as $i => $item)
+            <div class="flex items-center justify-between">
+                <h2 class="section-title !text-base">Most Popular</h2>
+                <a href="{{ route('news.index') }}" class="text-xs font-semibold text-primary hover:underline">Semua</a>
+            </div>
+            @forelse($popularArticles as $i => $item)
                 <a href="{{ route('news.show', $item->slug) }}" class="flex gap-3 items-start bg-white rounded-lg p-2.5 hover:shadow-card transition-shadow">
                     <span class="flex-shrink-0 w-7 h-7 rounded-full bg-primary-50 text-primary-700 font-bold text-sm flex items-center justify-center">{{ $i + 1 }}</span>
                     <div class="min-w-0">
@@ -80,7 +83,9 @@
                         <span class="text-xs text-slate-400">{{ $item->published_at?->diffForHumans() }}</span>
                     </div>
                 </a>
-            @endforeach
+            @empty
+                <p class="rounded-lg bg-white p-4 text-sm text-slate-500">Belum ada artikel populer.</p>
+            @endforelse
         </div>
     </section>
 
@@ -99,7 +104,7 @@
 
     {{-- ============ BERITA TERBARU - dua kolom ============ --}}
     <section class="max-w-7xl mx-auto px-4 md:px-6 py-8">
-        <h2 class="section-title mb-5">Berita Terbaru</h2>
+        <h2 class="section-title mb-5">Latest Article</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
             @foreach($latestArticles as $article)
                 <x-article-card :article="$article" />
@@ -165,12 +170,14 @@
     </section>
 
     {{-- ============ VIDEO HEALTHCARE - grid YouTube ============ --}}
-    @if($videos->count())
     <section id="video" class="max-w-7xl mx-auto px-4 md:px-6 py-8">
-        <h2 class="section-title mb-5">Video Healthcare</h2>
+        <div class="mb-5 flex items-center justify-between">
+            <h2 class="section-title">Video</h2>
+            <a href="{{ route('videos.index') }}" class="text-sm font-semibold text-primary hover:underline">Semua Video</a>
+        </div>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            @foreach($videos as $video)
-                <a href="https://youtube.com/watch?v={{ $video->youtube_id }}" target="_blank" rel="noopener" class="news-card group relative">
+            @forelse($videos as $video)
+                <a href="{{ route('videos.show', $video->slug) }}" class="news-card group relative">
                     <div class="aspect-video overflow-hidden bg-slate-200">
                         <img src="{{ $video->thumbnail_url }}" alt="{{ $video->title }}" loading="lazy"
                              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
@@ -180,10 +187,11 @@
                     </span>
                     <p class="p-3 text-sm font-semibold text-inkdark line-clamp-2">{{ $video->title }}</p>
                 </a>
-            @endforeach
+            @empty
+                <p class="col-span-full rounded-xl bg-white p-6 text-sm text-slate-500">Video akan segera hadir.</p>
+            @endforelse
         </div>
     </section>
-    @endif
 
     {{-- ============ INFOGRAFIS ============ --}}
     @if($infographics->count())

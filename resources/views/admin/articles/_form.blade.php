@@ -13,6 +13,7 @@
             <label class="admin-label mt-4">Ringkasan</label>
             <textarea name="excerpt" rows="2" maxlength="500" class="admin-input"
                       placeholder="Ringkasan singkat berita (maks 500 karakter)...">{{ old('excerpt', $article->excerpt ?? '') }}</textarea>
+            <p class="mt-1 text-xs text-slate-500">Maksimal 500 karakter.</p>
             @error('excerpt') <p class="text-xs text-breaking mt-1">{{ $message }}</p> @enderror
         </div>
 
@@ -22,8 +23,9 @@
             <p class="text-xs text-slate-400 mb-2">
                 Gunakan toolbar untuk memformat teks. Gambar yang disisipkan akan otomatis dikonversi ke format WebP.
             </p>
+            <a href="{{ route('admin.media.index', ['select' => 1]) }}" target="_blank" class="mb-3 inline-block text-sm font-semibold text-primary hover:underline">Pilih gambar dari Media Library</a>
             <input id="content" type="hidden" name="content" value="{{ old('content', $article->content ?? '') }}">
-            <trix-editor input="content" class="trix-content"></trix-editor>
+            <trix-editor input="content" class="trix-content" aria-label="Konten berita"></trix-editor>
             @error('content') <p class="text-xs text-breaking mt-1">{{ $message }}</p> @enderror
         </div>
 
@@ -37,30 +39,29 @@
         </div>
     </div>
 
-    {{-- Sidebar: publish, kategori, gambar utama, flag tampilan --}}
+    {{-- Sidebar: kategori, gambar utama, dan flag tampilan --}}
     <div class="flex flex-col gap-5">
         <div class="admin-card">
-            <label class="admin-label">Status</label>
-            <select name="status" class="admin-input">
-                <option value="draft" @selected(old('status', $article->status ?? 'draft')==='draft')>Draft</option>
-                <option value="published" @selected(old('status', $article->status ?? '')==='published')>Published</option>
-                <option value="archived" @selected(old('status', $article->status ?? '')==='archived')>Archived</option>
-            </select>
-
-            <label class="admin-label mt-3">Tanggal Terbit</label>
-            <input type="datetime-local" name="published_at"
-                   value="{{ old('published_at', isset($article->published_at) ? $article->published_at->format('Y-m-d\TH:i') : '') }}"
-                   class="admin-input">
-            <p class="text-xs text-slate-400 mt-1">Kosongkan untuk menggunakan waktu saat ini ketika status Published.</p>
-
+            <p class="admin-label">Status Editorial</p>
+            <p class="text-sm text-slate-600">
+                @if(isset($article))
+                    {{ ['draft' => 'Draft', 'in_review' => 'Menunggu review', 'scheduled' => 'Terjadwal', 'published' => 'Terbit', 'rejected' => 'Perlu revisi', 'archived' => 'Arsip'][$article->status] ?? ucfirst($article->status) }}
+                @else
+                    Draft
+                @endif
+            </p>
+            @if(isset($article) && $article->review_notes)
+                <p class="mt-2 rounded-lg bg-amber-50 p-3 text-sm text-amber-800">{{ $article->review_notes }}</p>
+            @endif
             <button type="submit" class="admin-btn-primary w-full justify-center mt-4">
-                {{ isset($article) ? 'Simpan Perubahan' : 'Publikasikan Berita' }}
+                {{ isset($article) ? 'Simpan Perubahan' : 'Simpan sebagai Draft' }}
             </button>
+            <p class="mt-2 text-xs text-slate-500">Terbitkan atau ajukan review dari daftar berita setelah menyimpan.</p>
         </div>
 
         <div class="admin-card">
-            <label class="admin-label">Kategori</label>
-            <select name="category_id" required class="admin-input">
+            <label for="article-category" class="admin-label">Rubrik / Kategori</label>
+            <select id="article-category" name="category_id" required class="admin-input">
                 <option value="">Pilih kategori</option>
                 @foreach($categories as $cat)
                     <option value="{{ $cat->id }}" @selected(old('category_id', $article->category_id ?? '')==$cat->id)>
@@ -82,9 +83,11 @@
         <div class="admin-card">
             <label class="admin-label">Gambar Utama (Featured Image)</label>
             @if(isset($article) && $article->featured_image)
-                <img src="{{ $article->featured_image_url }}" class="w-full aspect-video object-cover rounded-lg mb-2" alt="Gambar saat ini">
+                <img id="featured-image-preview" src="{{ $article->featured_image_url }}" class="w-full aspect-video object-cover rounded-lg mb-2" alt="Pratinjau gambar utama">
+            @else
+                <img id="featured-image-preview" class="hidden w-full aspect-video object-cover rounded-lg mb-2" alt="Pratinjau gambar utama">
             @endif
-            <input type="file" name="featured_image" accept="image/*" class="admin-input">
+            <input id="featured-image-input" type="file" name="featured_image" accept="image/jpeg,image/png,image/webp" class="admin-input">
             <p class="text-xs text-slate-400 mt-1">Otomatis dikonversi & dikompresi ke format WebP. Maks 5MB.</p>
             @error('featured_image') <p class="text-xs text-breaking mt-1">{{ $message }}</p> @enderror
 
@@ -92,6 +95,24 @@
             <input type="text" name="featured_image_alt" value="{{ old('featured_image_alt', $article->featured_image_alt ?? '') }}" class="admin-input" placeholder="Deskripsi gambar untuk SEO & aksesibilitas">
         </div>
 
+        <div class="admin-card">
+            <label for="article-slug" class="admin-label">Slug URL (Opsional)</label>
+            <input id="article-slug" type="text" name="slug" value="{{ old('slug', $article->slug ?? '') }}" maxlength="255" class="admin-input" placeholder="Dibuat otomatis dari judul">
+            @error('slug') <p class="text-xs text-breaking mt-1">{{ $message }}</p> @enderror
+            <p class="mt-1 text-xs text-slate-500">Kosongkan agar slug dibuat otomatis dari judul.</p>
+        </div>
+
+        <div class="admin-card">
+            <h3 class="font-semibold text-inkdark mb-3">Prapratinjau Artikel</h3>
+            @if(isset($article))
+                <a href="{{ route('admin.articles.preview', $article) }}" target="_blank" rel="noopener" class="admin-btn-primary w-full justify-center">Buka pratinjau tersimpan</a>
+                <p class="mt-2 text-xs text-slate-500">Simpan perubahan sebelum membuka pratinjau.</p>
+            @else
+                <p class="text-sm text-slate-600">Simpan artikel sebagai draft terlebih dahulu, lalu buka pratinjau dari halaman edit.</p>
+            @endif
+        </div>
+
+        @if(auth()->user()->isEditor())
         <div class="admin-card">
             <h3 class="font-semibold text-inkdark mb-3">Tampilan di Homepage</h3>
             <label class="flex items-center gap-2 mb-2.5 text-sm text-slate-700">
@@ -111,5 +132,6 @@
                 Artikel Pilihan Editor (Featured)
             </label>
         </div>
+        @endif
     </div>
 </div>

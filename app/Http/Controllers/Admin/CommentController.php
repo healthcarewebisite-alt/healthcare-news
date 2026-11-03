@@ -10,6 +10,10 @@ class CommentController extends Controller
 {
     public function index(Request $request)
     {
+        $request->validate([
+            'status' => ['nullable', 'in:pending,approved,spam'],
+        ]);
+
         $query = Comment::with(['article', 'user']);
 
         if ($request->filled('status')) {

@@ -1,8 +1,18 @@
 <?php
 
+use App\Models\Article;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schedule;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
+
+Schedule::call(function () {
+    Article::query()
+        ->where('status', 'scheduled')
+        ->whereNotNull('published_at')
+        ->where('published_at', '<=', now())
+        ->update(['status' => 'published']);
+})->everyMinute()->name('publish-scheduled-articles')->withoutOverlapping();

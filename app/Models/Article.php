@@ -10,7 +10,7 @@ use Spatie\Sluggable\SlugOptions;
 
 class Article extends Model
 {
-    use HasSlug, SoftDeletes, ResolvesImageUrl;
+    use HasSlug, ResolvesImageUrl, SoftDeletes;
 
     protected $fillable = [
         'title', 'slug', 'excerpt', 'content',
@@ -18,6 +18,7 @@ class Article extends Model
         'category_id', 'author_id',
         'is_headline', 'is_trending', 'is_breaking', 'is_featured',
         'status', 'published_at',
+        'submitted_for_review_at', 'reviewed_at', 'reviewed_by', 'review_notes',
         'views_count', 'meta_title', 'meta_description',
     ];
 
@@ -29,6 +30,8 @@ class Article extends Model
             'is_breaking' => 'boolean',
             'is_featured' => 'boolean',
             'published_at' => 'datetime',
+            'submitted_for_review_at' => 'datetime',
+            'reviewed_at' => 'datetime',
         ];
     }
 
@@ -48,6 +51,11 @@ class Article extends Model
     public function author()
     {
         return $this->belongsTo(User::class, 'author_id');
+    }
+
+    public function reviewer()
+    {
+        return $this->belongsTo(User::class, 'reviewed_by');
     }
 
     public function tags()
@@ -122,6 +130,7 @@ class Article extends Model
     public function getReadingTimeAttribute(): int
     {
         $words = str_word_count(strip_tags($this->content));
+
         return max(1, (int) ceil($words / 200));
     }
 
